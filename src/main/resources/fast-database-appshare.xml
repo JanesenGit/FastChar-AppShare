@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE database>
+<database name="*">
+
+    <table name="final_app" comment="APP管理">
+        <column name="appId" comment="编号" type="int" length="11"
+                primary="true" autoincrement="true" nullable="not null"/>
+
+        <column name="appCode" comment="应用标识" type="varchar"
+                nullable="null" length="500"/>
+
+        <column name="appName" comment="应用名称" type="varchar"
+                nullable="null" length="500"/>
+
+        <column name="appLogo" comment="应用图标" type="varchar"
+                nullable="null" length="500" render="Image"/>
+
+        <column name="appState" comment="应用状态" type="int"
+                nullable="null" length="11" render="Enum"/>
+
+        <column name="appDateTime" comment="录入时间" type="datetime"
+                length="6" nullable="null"/>
+    </table>
+
+    <table name="final_app_android" comment="安卓版本管理">
+        <column name="versionId" comment="编号" type="int" length="11"
+                primary="true" autoincrement="true" nullable="not null"/>
+
+        <column name="appId" comment="所属应用" type="int" nullable="null"
+                length="11" link="final_app@appId@appName"/>
+
+        <column name="packageName" comment="包名" type="varchar"
+                nullable="null" length="500"/>
+
+        <column name="versionName" comment="版本号" type="varchar"
+                nullable="null" length="500"/>
+
+        <column name="versionBuild" comment="构建号" type="int"
+                nullable="null" length="11"/>
+
+        <column name="appFile" comment="安装包" type="varchar"
+                nullable="null" length="500" render="File"/>
+
+        <column name="appPubUrl" comment="应用商店地址" type="varchar"
+                nullable="null" length="500"/>
+
+        <column name="fileSize" comment="安装包大小" type="int"
+                nullable="null" length="11"/>
+
+        <column name="versionDesc" comment="版本介绍" type="text"
+                nullable="null" render="Content"/>
+
+        <column name="versionImportant" comment="重要程度" type="int"
+                nullable="null" length="11" render="Enum"/>
+
+        <column name="countDownload" comment="下载次数" type="int"
+                nullable="null" length="11"/>
+
+        <column name="versionState" comment="版本状态" type="int"
+                nullable="null" length="11" render="Enum"/>
+
+        <column name="appOSType" comment="系统要求" type="varchar"
+                nullable="null" length="500" />
+
+        <column name="appSign" comment="应用MD5签名" type="varchar"
+                nullable="null" length="500" />
+
+        <column name="appPermissions" comment="权限要求" type="text"
+                nullable="null" render="Content" />
+
+        <column name="versionDateTime" comment="录入时间" type="datetime"
+                length="6" nullable="null"/>
+    </table>
+
+
+    <table name="final_app_ios" comment="苹果版本管理">
+        <column name="versionId" comment="编号" type="int" length="11"
+                primary="true" autoincrement="true" nullable="not null"/>
+
+        <column name="appId" comment="所属应用" type="int" nullable="null"
+                length="11" link="final_app@appId@appName"/>
+
+        <column name="packageName" comment="包名" type="varchar"
+                nullable="null" length="500"/>
+
+        <column name="versionName" comment="版本号" type="varchar"
+                nullable="null" length="500"/>
+
+        <column name="versionBuild" comment="构建号" type="int"
+                nullable="null" length="11"/>
+
+        <column name="plistFile" comment="plist文件" type="varchar"
+                nullable="null" length="500" render="File"/>
+
+        <column name="appFile" comment="安装包" type="varchar"
+                nullable="null" length="500" render="File"/>
+
+        <column name="fileSize" comment="安装包大小" type="int"
+                nullable="null" length="11"/>
+
+        <column name="versionDesc" comment="版本介绍" type="text"
+                nullable="null" render="Content"/>
+
+        <column name="appStoreUrl" comment="AppStore地址" type="varchar"
+                nullable="null" length="500"/>
+
+        <column name="versionImportant" comment="重要程度" type="int"
+                nullable="null" length="11" render="Enum"/>
+
+        <column name="countDownload" comment="下载次数" type="int"
+                nullable="null" length="11"/>
+
+        <column name="versionState" comment="版本状态" type="int"
+                nullable="null" length="11" render="Enum"/>
+
+        <column name="appOSType" comment="系统要求" type="varchar"
+                nullable="null" length="500" />
+
+        <column name="appDevices" comment="设备列表" type="text"
+                nullable="null" render="Content"/>
+
+        <column name="appTeamName" comment="开发者账号" type="varchar"
+                nullable="null" length="500" />
+
+        <column name="versionDateTime" comment="录入时间" type="datetime"
+                length="6" nullable="null"/>
+    </table>
+
+
+</database>

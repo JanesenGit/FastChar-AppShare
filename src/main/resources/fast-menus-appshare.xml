@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE menus>
+<menus>
+    <menu text="应用下载" color="#00ADE3" icon="icons/icon_manage_app.svg">
+        <menu text="APP管理" method="showList('FinalAppEntity')" icon="icons/icon_manage_app.svg"/>
+        <menu text="安卓版本管理" method="showList('FinalAppAndroidEntity')" icon="icons/icon_manage_android.svg"/>
+        <menu text="苹果版本管理" method="showList('FinalAppIosEntity')" icon="icons/icon_manage_ios.svg"/>
+    </menu>
+
+</menus>

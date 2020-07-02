@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+FastChar-Web: com.fastchar.appshare.FastAppShareWeb
+FastChar-Scanner: true
+FastChar-Extract: true
+FastChat-Exclude: */ios-plist
+
