@@ -127,4 +127,39 @@
     </table>
 
 
+    <table name="final_app_android_history" comment="安卓版本下载记录">
+        <column name="historyId" comment="编号" type="int" length="11"
+                primary="true" autoincrement="true" nullable="not null"/>
+
+        <column name="versionId" comment="所属版本" type="int"
+                nullable="null" length="11" />
+
+        <column name="clientIp" comment="客户端IP" type="varchar"
+                nullable="null" length="500" />
+
+        <column name="clientInfo" comment="客户端信息" type="text"
+                nullable="null" render="Content"/>
+
+        <column name="historyDateTime" comment="录入时间" type="datetime"
+                length="6" nullable="null"/>
+    </table>
+
+    <table name="final_app_ios_history" comment="苹果版本下载记录">
+        <column name="historyId" comment="编号" type="int" length="11"
+                primary="true" autoincrement="true" nullable="not null"/>
+
+        <column name="versionId" comment="所属版本" type="int"
+                nullable="null" length="11" />
+
+        <column name="clientIp" comment="客户端IP" type="varchar"
+                nullable="null" length="500" />
+
+        <column name="clientInfo" comment="客户端信息" type="text"
+                nullable="null" render="Content"/>
+
+        <column name="historyDateTime" comment="录入时间" type="datetime"
+                length="6" nullable="null"/>
+    </table>
+
+
 </database>

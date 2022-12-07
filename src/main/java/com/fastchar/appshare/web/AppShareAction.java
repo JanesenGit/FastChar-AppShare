@@ -50,7 +50,7 @@ public class AppShareAction extends FastAction {
                     List<IconFace> allIcons = apkFile.getAllIcons();
                     if (allIcons.size() > 0) {
                         File iconFile = new File(FastChar.getConstant().getAttachDirectory(), appCode + ".png");
-                        FastFileUtils.writeByteArrayToFile(iconFile, allIcons.get(0).getData());
+                        FastFileUtils.writeByteArrayToFile(iconFile, allIcons.get(allIcons.size() - 1).getData());
                         appByCode.set("appLogo", FastFile.newInstance(iconFile).getUrl());
                     }
                     if (!appByCode.save()) {
@@ -58,7 +58,9 @@ public class AppShareAction extends FastAction {
                     }
                 }
 
-                FinalAppAndroidEntity lastVersion = FinalAppAndroidEntity.dao().getLastVersion(appByCode.getId());
+                boolean beta = apkMeta.getVersionName().toLowerCase().contains("beta");
+
+                FinalAppAndroidEntity lastVersion = FinalAppAndroidEntity.dao().getLastVersion(appByCode.getId(), beta);
 
                 FinalAppAndroidEntity androidEntity = FinalAppAndroidEntity.newInstance();
                 androidEntity.set("appId", appByCode.getId());
@@ -96,9 +98,12 @@ public class AppShareAction extends FastAction {
                 if (appByCode == null) {
                     appByCode = FinalAppEntity.newInstance();
                     appByCode.set("appCode", appCode);
-                    appByCode.set("appName", String.valueOf(rootDict.get("CFBundleDisplayName")));
+                    if (rootDict.containsKey("CFBundleDisplayName")) {
+                        appByCode.set("appName", String.valueOf(rootDict.get("CFBundleDisplayName")));
+                    }else{
+                        appByCode.set("appName", String.valueOf(rootDict.get("CFBundleName")));
+                    }
                     appByCode.set("appState", FinalAppEntity.AppStateEnum.正常.ordinal());
-
                     File appIcon = IPAUtils.getAppIcon(paramFile.getFile(), plistFile);
                     if (appIcon != null) {
 
@@ -122,7 +127,9 @@ public class AppShareAction extends FastAction {
                     }
                 }
 
-                FinalAppIosEntity lastVersion = FinalAppIosEntity.dao().getLastVersion(appByCode.getId());
+                boolean beta = String.valueOf(rootDict.get("CFBundleShortVersionString")).toLowerCase().contains("beta");
+
+                FinalAppIosEntity lastVersion = FinalAppIosEntity.dao().getLastVersion(appByCode.getId(), beta);
                 FinalAppIosEntity iosEntity = FinalAppIosEntity.newInstance();
                 iosEntity.set("appId", appByCode.getId());
                 if (lastVersion != null) {
@@ -135,6 +142,7 @@ public class AppShareAction extends FastAction {
                 iosEntity.set("versionName", String.valueOf(rootDict.get("CFBundleShortVersionString")));
                 iosEntity.set("versionBuild", String.valueOf(rootDict.get("CFBundleVersion")));
                 iosEntity.set("appOSType", String.valueOf(rootDict.get("MinimumOSVersion")));
+
                 File mobileProvisionFile = IPAUtils.getMobileProvisionFile(paramFile.getFile());
                 if (mobileProvisionFile != null && mobileProvisionFile.exists()) {
                     NSDictionary nsDictionary = IPAUtils.parseMobileProvisionFile(mobileProvisionFile);

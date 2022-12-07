@@ -58,6 +58,11 @@ public class FinalAppEntity extends FastExtEntity<FinalAppEntity> {
         }
     }
 
+
+    public void pullQrUrl(String http) {
+        put("qrUrl", http + "qrCode?v=1&render=image&logo=" + get("appLogo") + "&content=" + http + "appshare/download/" + get("appCode"));
+    }
+
     public enum AppStateEnum {
         正常,
         下线
@@ -79,6 +84,7 @@ public class FinalAppEntity extends FastExtEntity<FinalAppEntity> {
         String sqlStr = "select * from final_app where appCode = ? ";
         return selectFirstBySql(sqlStr,appCode);
     }
+
 
 
 }

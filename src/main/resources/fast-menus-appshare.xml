@@ -6,5 +6,4 @@
         <menu text="安卓版本管理" method="showList('FinalAppAndroidEntity')" icon="icons/icon_manage_android.svg"/>
         <menu text="苹果版本管理" method="showList('FinalAppIosEntity')" icon="icons/icon_manage_ios.svg"/>
     </menu>
-
 </menus>

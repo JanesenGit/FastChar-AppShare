@@ -1,12 +1,13 @@
 /**
- * FinalAppEntity实体类【APP管理】
+ * FinalAppAndroidHistoryEntity实体类【安卓版本下载记录】
  */
-function FinalAppEntity() {
+function FinalAppAndroidHistoryEntity() {
     this.getList = function (where) {
         let me = this;
         let dataStore = getEntityDataStore(me, where);
         let grid = Ext.create('Ext.grid.Panel', {
             entityList: true,
+            tabPanelList: false,
             selModel: getGridSelModel(),
             region: 'center',
             multiColumnSort: true,
@@ -23,7 +24,7 @@ function FinalAppEntity() {
                 alertDelete: true,
                 alertUpdate: true,
                 autoUpdate: false,
-                autoDetails: true,
+                autoDetails: false,
                 hoverTip: false,
                 excelOut: true,
                 excelIn: true
@@ -31,124 +32,68 @@ function FinalAppEntity() {
             columns: [
                 {
                     text: "编号",
-                    dataIndex: "appId",
+                    dataIndex: "historyId",
                     align: "center",
                     width: 220,
                     renderer: renders.normal(),
                     editable: false
                 },
                 {
-                    text: "应用标识",
-                    dataIndex: "appCode",
+                    text: "客户端IP",
+                    dataIndex: "clientIp",
                     align: "center",
                     width: 220,
-                    renderer: renders.normal(),
-                    field: "textfield"
+                    field: "textfield",
+                    renderer: renders.normal()
                 },
                 {
-                    text: "应用名称",
-                    dataIndex: "appName",
+                    text: "客户端信息",
+                    dataIndex: "clientInfo",
                     align: "center",
                     width: 220,
-                    renderer: renders.normal(),
-                    field: "textfield"
-                },
-                {
-                    text: "应用图标",
-                    dataIndex: "appLogo",
-                    align: "center",
-                    width: 220,
-                    renderer: renders.image(),
-                    field: {
-                        xtype: 'fastfile',
-                        fileModules: [files.image()]
-                    }
-                },
-                {
-                    text: "应用状态",
-                    dataIndex: "appState",
-                    align: "center",
-                    width: 220,
-                    rendererFunction: "renders.enum('AppStateEnum')",
-                    field: {
-                        xtype: 'enumcombo',
-                        enumName: 'AppStateEnum'
-                    }
-                },
-                {
-                    text: "正式版下载页面",
-                    dataIndex: "appCode",
-                    align: "center",
-                    width: 120,
-                    renderer: function (val) {
-                        return "&nbsp;<a href='appshare/download/" + val + "' target='_blank'>点击查看</a>&nbsp;";
-                    }
-                },
-                {
-                    text: "内测版下载页面",
-                    dataIndex: "appCode",
-                    align: "center",
-                    width: 120,
-                    renderer: function (val) {
-                        return "&nbsp;<a href='appshare/download/" + val + "/beta' target='_blank'>点击查看</a>&nbsp;";
-                    }
-                },
-                {
-                    text: "下载二维码",
-                    dataIndex: "appCode",
-                    align: "center",
-                    width: 220,
-                    renderer: function (val, metaData, record) {
-                        let url = "qrCode?v=1&render=image&logo=" + record.get("appLogo") + "&content=" + system.http + "appshare/download/" + val;
-                        let functionStr = "showImage(null,\"" + url + "\")";
-                        return "<a href='javascript:" + functionStr + ";'>查看</a>"
-                    }
+                    field: "contentfield",
+                    renderer: renders.normal()
                 },
                 {
                     text: "录入时间",
-                    dataIndex: "appDateTime",
+                    dataIndex: "historyDateTime",
                     align: "center",
                     flex: 1,
                     minWidth: 220,
-                    renderer: renders.normal(),
+                    rendererFunction: "renders.dateFormat('Y-m-d H:i:s')",
                     field: {
-                        xtype: 'datefield',
-                        format: 'Y-m-d H:i:s'
+                        xtype: "datefield",
+                        format: "Y-m-d H:i:s"
                     }
                 }],
             tbar: {
                 xtype: 'toolbar',
                 overflowHandler: 'menu',
-                items: [{
-                    xtype: 'button',
-                    text: '删除APP',
-                    iconCls: 'extIcon extDelete',
-                    tipText: '删除APP！',
-                    checkSelect: 2,
-                    handler: function () {
-                        deleteGridData(grid);
-                    }
-                },
+                items: [
                     {
                         xtype: 'button',
-                        text: '添加APP',
-                        iconCls: 'extIcon extAdd',
+                        text: '删除安卓版本下载记录',
+                        iconCls: 'extIcon extDelete',
+                        tipText: '删除安卓版本下载记录！',
+                        checkSelect: 2,
                         handler: function () {
-                            me.uploadAppFile(this, function () {
-                                dataStore.loadPage(1);
-                            });
+                            deleteGridData(grid);
                         }
                     },
                     {
                         xtype: 'button',
                         text: '提交修改',
-                        subtext: 'APP',
+                        subtext: '安卓版本下载记录',
                         checkUpdate: true,
                         iconCls: 'extIcon extSave',
                         handler: function () {
                             updateGridData(grid);
                         }
                     }]
+            },
+            onBeforeLoad: function (obj, store, params) {
+                //此处可追加额外参数
+                return true;
             },
             bbar: getPageToolBar(dataStore),
             plugins: [Ext.create('Ext.grid.plugin.CellEditing', {
@@ -207,30 +152,21 @@ function FinalAppEntity() {
                     }
                 },
                 items: [{
-                    name: "data.appName",
-                    xtype: "textfield",
-                    fieldLabel: "应用名称",
+                    name: "data.versionId",
+                    xtype: "numberfield",
+                    fieldLabel: "所属版本",
                     columnWidth: 1,
                     allowBlank: false
                 },
                     {
-                        name: "data.appLogo",
-                        xtype: "fastfile",
-                        fileModules: [files.image()],
-                        fieldLabel: "应用图标",
+                        name: "data.clientInfo",
+                        xtype: "contentfield",
+                        allowBlank: false,
+                        fieldLabel: "客户端信息",
                         columnWidth: 1
                     },
                     {
-                        name: "data.appState",
-                        xtype: "enumcombo",
-                        fieldLabel: "应用状态",
-                        columnWidth: 1,
-                        value: 0,
-                        allowBlank: false,
-                        enumName: "AppStateEnum"
-                    },
-                    {
-                        name: "data.appDateTime",
+                        name: "data.historyDateTime",
                         xtype: "datefield",
                         format: "Y-m-d H:i:s",
                         fieldLabel: "录入时间",
@@ -239,11 +175,11 @@ function FinalAppEntity() {
             });
 
             let addWin = Ext.create('Ext.window.Window', {
-                title: '添加APP',
-                height: 400,
+                title: '添加安卓版本下载记录',
+                height: 426,
                 icon: obj.icon,
                 iconCls: obj.iconCls,
-                width: 520,
+                width: 550,
                 layout: 'border',
                 resizable: true,
                 maximizable: true,
@@ -324,6 +260,8 @@ function FinalAppEntity() {
         if (obj != null) {
             win.setIcon(obj.icon);
             win.setIconCls(obj.iconCls);
+        }else{
+            win.setIconCls("extIcon extSee");
         }
         win.show();
     };
@@ -372,47 +310,18 @@ function FinalAppEntity() {
                 store: dataStore,
                 enableLocking: true,
                 columns: [{
-                    text: "应用名称",
-                    dataIndex: "appName",
+                    text: "录入时间",
+                    dataIndex: "historyDateTime",
                     align: "center",
-                    width: 220,
-                    renderer: renders.normal(),
-                    field: "textfield",
+                    flex: 1,
+                    minWidth: 220,
+                    rendererFunction: "renders.dateFormat('Y-m-d H:i:s')",
+                    field: {
+                        xtype: "datefield",
+                        format: "Y-m-d H:i:s"
+                    },
                     editable: false
-                },
-                    {
-                        text: "应用图标",
-                        dataIndex: "appLogo",
-                        align: "center",
-                        width: 220,
-                        renderer: renders.image(),
-                        editable: false
-                    },
-                    {
-                        text: "应用状态",
-                        dataIndex: "appState",
-                        align: "center",
-                        width: 220,
-                        rendererFunction: "renders.enum('AppStateEnum')",
-                        field: {
-                            xtype: 'enumcombo',
-                            enumName: 'AppStateEnum'
-                        },
-                        editable: false
-                    },
-                    {
-                        text: "录入时间",
-                        dataIndex: "appDateTime",
-                        align: "center",
-                        flex: 1,
-                        minWidth: 220,
-                        renderer: renders.normal(),
-                        field: {
-                            xtype: 'datefield',
-                            format: 'Y-m-d H:i:s'
-                        },
-                        editable: false
-                    }],
+                }],
                 bbar: getPageToolBar(dataStore),
                 viewConfig: {
                     loadingText: '正在为您在加载数据…'
@@ -443,7 +352,7 @@ function FinalAppEntity() {
                     }
                 },
                 buttons: [{
-                    text: '添加APP',
+                    text: '添加安卓版本下载记录',
                     iconCls: 'extIcon extAdd whiteColor',
                     handler: function () {
                         me.showAdd(this, where).then(function (result) {
@@ -490,113 +399,7 @@ function FinalAppEntity() {
                 return;
             }
             let record = records[0];
-            showDetailsWindow(obj, "APP详情", me, record);
+            showDetailsWindow(obj, "安卓版本下载记录详情", me, record);
         });
-    };
-
-    this.uploadAppFile = function (obj, callBack, type) {
-        obj.blur();
-        if (Ext.isEmpty(type)) {
-            type = "all";
-        }
-        let title = "上传安卓（APK）或苹果（IPA）安装包";
-
-        if (type === "ios") {
-            title = "上传苹果（IPA）安装包";
-        } else if (type === "android") {
-            title = "上传安卓（APK）安装包";
-        }
-
-        let formPanel = Ext.create('Ext.form.FormPanel', {
-            url: 'appshare/upload',
-            bodyPadding: 5,
-            method: 'POST',
-            region: 'center',
-            fileUpload: true,
-            autoScroll: true,
-            defaults: {
-                labelWidth: 60,
-                margin: '5 5 5 5',
-                labelAlign: 'right',
-                emptyText: '请填写'
-            },
-            layout: "column",
-            submitData: function () {
-                let form = formPanel.form;
-                if (form.isValid()) {
-                    form.submit({
-                        waitMsg: '正在上传安装包中…',
-                        submitEmptyText: false,
-                        success: function (form, action) {
-                            Ext.Msg.alert('系统提醒', action.result.message, function () {
-                                if (action.result.success) {
-                                    win.close();
-                                    callBack();
-                                }
-                            });
-                        },
-                        failure: function (form, action) {
-                            win.close();
-                            Ext.Msg.alert('系统提醒', action.result.message);
-                        }
-                    });
-                }
-            },
-            items: [
-                {
-                    xtype: 'filefield',
-                    fieldLabel: "安装包",
-                    buttonText: '选择文件',
-                    allowBlank: false,
-                    name: 'appFile',
-                    columnWidth: 1,
-                    listeners: {
-                        change: function (obj, value, eOpts) {
-                            if (value != null && value.length != 0) {
-                                let reg = eval(/\.(apk|ipa)$/i);
-                                if (type === "android") {
-                                    reg = eval(/\.(apk)$/i);
-                                } else if (type === "ios") {
-                                    reg = eval(/\.(ipa)$/i);
-                                }
-                                if (!reg.test(value)) {
-                                    obj.reset();
-                                    if (type === "android") {
-                                        Ext.Msg.alert('系统提醒', "请上传有效的安装包文件(.apk)");
-                                    } else if (type === "ios") {
-                                        Ext.Msg.alert('系统提醒', "请上传有效的安装包文件(.ipa)");
-                                    } else {
-                                        Ext.Msg.alert('系统提醒', "请上传有效的安装包文件(.apk|.ipa)");
-                                    }
-
-                                }
-                            }
-                        }
-                    }
-                },
-                {
-                    xtype: 'button',
-                    text: '立即上传',
-                    columnWidth: 1,
-                    handler: function () {
-                        formPanel.submitData();
-                    }
-                }]
-        });
-
-        let win = Ext.create('Ext.window.Window', {
-            title: title,
-            height: 180,
-            width: 400,
-            layout: 'border',
-            modal: true,
-            iconCls: 'extIcon extUpload',
-            resizable: false,
-            constrain: true,
-            maximizable: false,
-            animateTarget: obj,
-            items: [formPanel]
-        });
-        win.show();
     };
 }

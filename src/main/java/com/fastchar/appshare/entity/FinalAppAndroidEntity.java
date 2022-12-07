@@ -83,6 +83,10 @@ public class FinalAppAndroidEntity extends FastExtEntity<FinalAppAndroidEntity> 
         }
     }
 
+    public boolean isBeta() {
+        return getString("versionName", "none").toLowerCase().contains("beta");
+    }
+
 
     /**
      * 获得数据详情
@@ -164,10 +168,17 @@ public class FinalAppAndroidEntity extends FastExtEntity<FinalAppAndroidEntity> 
     }
 
 
-    public FinalAppAndroidEntity getLastVersion(int appId) {
-        String sqlStr = "select * from final_app_android where appId = ? order by versionDateTime desc ";
+    public FinalAppAndroidEntity getLastVersion(int appId,boolean beta) {
+        String sqlStr = "select * from final_app_android where appId = ?  ";
+
+        if (beta) {
+            sqlStr += " and lower(versionName) like '%beta%' ";
+        }else{
+            sqlStr += " and lower(versionName) not like '%beta%' ";
+        }
+        sqlStr += " order by versionDateTime desc ";
+
         return selectFirstBySql(sqlStr, appId);
     }
-
 
 }

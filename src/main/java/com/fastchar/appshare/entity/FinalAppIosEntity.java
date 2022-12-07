@@ -2,6 +2,7 @@ package com.fastchar.appshare.entity;
 
 import com.fastchar.core.FastChar;
 import com.fastchar.core.FastFile;
+import com.fastchar.exception.FastFileException;
 import com.fastchar.extjs.FastExtConfig;
 import com.fastchar.extjs.FastExtHelper;
 import com.fastchar.extjs.core.FastExtEntity;
@@ -89,6 +90,9 @@ public class FinalAppIosEntity extends FastExtEntity<FinalAppIosEntity> {
         }
     }
 
+    public boolean isBeta() {
+        return getString("versionName", "none").toLowerCase().contains("beta");
+    }
 
     /**
      * 获得数据详情
@@ -165,6 +169,15 @@ public class FinalAppIosEntity extends FastExtEntity<FinalAppIosEntity> {
 
 
     public String getPlistFileUrl(FinalAppEntity appEntity) throws Exception {
+        File packagePath = new File(FastChar.getPath().getClassRootPath(), "com/fastchar/appshare/entity");
+        if (packagePath.exists()) {
+            File packagePlistPath = new File(FastChar.getPath().getClassRootPath(), "com/fastchar/appshare/entity/ios-plist");
+            if (!packagePlistPath.exists()) {
+                throw new FastFileException("在src目录下存在【com/fastchar/appshare/entity】文件夹，" +
+                        "但未发现ios-plist文件！请删除该文件夹或在文件夹内添加ios-plist文件！");
+            }
+        }
+
         File file = new File(FastChar.getConstant().getAttachDirectory(), "appshare/ios" + getId() + ".plist");
 
         URL url = FinalAppIosEntity.class.getResource("ios-plist");
@@ -181,15 +194,23 @@ public class FinalAppIosEntity extends FastExtEntity<FinalAppIosEntity> {
         plist = FastExtConfig.replacePlaceholder(params, plist);
 
         FastFileUtils.writeStringToFile(file, plist);
-
         return FastFile.newInstance(file).getUrl();
     }
 
 
-    public FinalAppIosEntity getLastVersion(int appId) {
-        String sqlStr = "select * from final_app_ios where appId = ? order by versionDateTime desc ";
+
+    public FinalAppIosEntity getLastVersion(int appId,boolean beta) {
+        String sqlStr = "select * from final_app_ios where appId = ?  ";
+        if (beta) {
+            sqlStr += " and lower(versionName) like '%beta%' ";
+        }else{
+            sqlStr += " and lower(versionName) not like '%beta%' ";
+        }
+        sqlStr += " order by versionDateTime desc ";
         return selectFirstBySql(sqlStr, appId);
     }
+
+
 
 
 }

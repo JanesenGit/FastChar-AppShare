@@ -1,10 +1,8 @@
 package com.fastchar.appshare.action;
 
-import com.fastchar.appshare.entity.FinalAppAndroidEntity;
-import com.fastchar.appshare.entity.FinalAppEntity;
-import com.fastchar.appshare.entity.FinalAppIosEntity;
+import com.fastchar.annotation.AFastRoute;
+import com.fastchar.appshare.entity.*;
 import com.fastchar.core.FastAction;
-import com.fastchar.core.FastChar;
 import com.fastchar.utils.FastMD5Utils;
 import com.fastchar.utils.FastNumberUtils;
 import com.fastchar.utils.FastStringUtils;
@@ -16,6 +14,7 @@ import java.util.Map;
  * @author 沈建（Janesen）
  * @date 2020/5/19 15:46
  */
+@AFastRoute(interceptorAfter = false)
 public class AppShareAction extends FastAction {
     @Override
     protected String getRoute() {
@@ -36,10 +35,12 @@ public class AppShareAction extends FastAction {
             responseText("无效应用！");
         }
         String appCode = FastMD5Utils.MD5To16(packageName);
+        boolean beta = getParamToBoolean("beta");
+
         FinalAppEntity appByCode = FinalAppEntity.dao().getAppByCode(appCode);
         if (appByCode != null) {
             if (getParamToBoolean("ios", Boolean.FALSE)) {
-                FinalAppIosEntity lastVersion = FinalAppIosEntity.dao().getLastVersion(appByCode.getId());
+                FinalAppIosEntity lastVersion = FinalAppIosEntity.dao().getLastVersion(appByCode.getId(), beta);
                 if (lastVersion != null) {
                     Map<String, Object> maps = new HashMap<>();
                     maps.put("versionName", lastVersion.get("versionName"));//版本名称，例如1.0.2为字符串类型
@@ -52,7 +53,7 @@ public class AppShareAction extends FastAction {
                     responseJson(maps);
                 }
             } else {
-                FinalAppAndroidEntity lastVersion = FinalAppAndroidEntity.dao().getLastVersion(appByCode.getId());
+                FinalAppAndroidEntity lastVersion = FinalAppAndroidEntity.dao().getLastVersion(appByCode.getId(), beta);
                 if (lastVersion != null) {
                     Map<String, Object> maps = new HashMap<>();
                     maps.put("versionName", lastVersion.get("versionName"));//版本名称，例如1.0.2为字符串类型
@@ -76,11 +77,19 @@ public class AppShareAction extends FastAction {
      */
     public void download() throws Exception {
         String appCode = getUrlParam(0);
+        boolean beta = getParamToBoolean("beta");
+        if (getUrlParams().size() > 1) {
+            String urlBeta = getUrlParams().get(1);
+            if (urlBeta.equalsIgnoreCase("beta")) {
+                beta = true;
+            }
+        }
         FinalAppEntity appByCode = FinalAppEntity.dao().getAppByCode(appCode);
         if (appByCode == null) {
             appByCode = FinalAppEntity.dao().selectById(appCode);
         }
         if (appByCode != null) {
+            appByCode.pullQrUrl(getProjectHost());
             String appLogo = appByCode.getString("appLogo");
             if (!appLogo.startsWith("http")) {
                 appByCode.set("appLogo", getProjectHost() + appLogo);
@@ -89,31 +98,56 @@ public class AppShareAction extends FastAction {
             setRequestAttr("app", appByCode);
             String userAgent = getUserAgent();
             if (userAgent.contains("iPhone")) {
-                appByCode.put("typeName", "苹果版");
-                FinalAppIosEntity lastVersion = FinalAppIosEntity.dao().getLastVersion(appByCode.getId());
-                if (lastVersion != null) {
-                    lastVersion.set("appFile", getProjectHost() + "appshare/load/ios/" + lastVersion.getId());
-                    setRequestAttr("ver", lastVersion);
-                    if (lastVersion.isNotEmpty("appStoreUrl")) {
-                        redirect(lastVersion.getString("appStoreUrl"));
-                    }
-                    responseVelocity("/html/app-download.html");
-                }
+                returnDownloadIOS(appByCode, beta);
+                returnDownloadAndroid(appByCode, beta);
             } else {
-                appByCode.put("typeName", "安卓版");
-                FinalAppAndroidEntity lastVersion = FinalAppAndroidEntity.dao().getLastVersion(appByCode.getId());
-                if (lastVersion != null) {
-                    lastVersion.set("appFile", getProjectHost() + "appshare/load/android/" + lastVersion.getId());
-                    setRequestAttr("ver", lastVersion);
-                    if (lastVersion.isNotEmpty("appPubUrl")) {
-                        redirect(lastVersion.getString("appPubUrl"));
-                    }
-                    responseVelocity("/html/app-download.html");
-                }
+                returnDownloadAndroid(appByCode, beta);
+                returnDownloadIOS(appByCode, beta);
             }
-
         }
-        responseText("应用信息不存在！");
+        if (beta) {
+            response502("暂无应用的Beta版本信息！");
+        }
+        response502("暂无应用的版本信息！");
+    }
+
+
+    private void returnDownloadIOS(FinalAppEntity appByCode, boolean beta) {
+        appByCode.put("typeName", "苹果版");
+        if (beta) {
+            appByCode.put("typeName", "苹果Beta版");
+        }
+        FinalAppIosEntity lastVersion = FinalAppIosEntity.dao().getLastVersion(appByCode.getId(), beta);
+        if (lastVersion != null) {
+            lastVersion.formatDate("versionDateTime", "yyyy-MM-dd HH:mm");
+            lastVersion.set("appFile", getProjectHost() + "appshare/load/ios/" + lastVersion.getId());
+            setRequestAttr("ver", lastVersion);
+            setRequestAttr("type", "ios");
+            setRequestAttr("http", getProjectHost());
+            if (lastVersion.isNotEmpty("appStoreUrl") && !beta) {
+                redirect(lastVersion.getString("appStoreUrl"));
+            }
+            responseVelocity("/html/appshare/app-download.html");
+        }
+    }
+
+    private void returnDownloadAndroid(FinalAppEntity appByCode, boolean beta) {
+        appByCode.put("typeName", "安卓版");
+        if (beta) {
+            appByCode.put("typeName", "安卓Beta版");
+        }
+        FinalAppAndroidEntity lastVersion = FinalAppAndroidEntity.dao().getLastVersion(appByCode.getId(), beta);
+        if (lastVersion != null) {
+            lastVersion.formatDate("versionDateTime", "yyyy-MM-dd HH:mm");
+            lastVersion.set("appFile", getProjectHost() + "appshare/load/android/" + lastVersion.getId());
+            setRequestAttr("ver", lastVersion);
+            setRequestAttr("type", "android");
+            setRequestAttr("http", getProjectHost());
+            if (lastVersion.isNotEmpty("appPubUrl") && !beta) {
+                redirect(lastVersion.getString("appPubUrl"));
+            }
+            responseVelocity("/html/appshare/app-download.html");
+        }
     }
 
 
@@ -128,12 +162,17 @@ public class AppShareAction extends FastAction {
             if (lastVersion != null) {
                 lastVersion.set("countDownload", lastVersion.getInt("countDownload") + 1);
                 if (lastVersion.update()) {
+                    FinalAppAndroidHistoryEntity history = FinalAppAndroidHistoryEntity.newInstance();
+                    history.set("versionId", lastVersion.getId());
+                    history.set("clientIp", getRemoteIp());
+                    history.set("clientInfo", getUserAgent());
+                    history.save();
+
                     String appFile = lastVersion.getString("appFile");
                     if (!appFile.startsWith("http")) {
                         redirect(getProjectHost() + appFile);
                     }
                     redirect(appFile);
-
                 }
             }
         } else if (type.equalsIgnoreCase("ios")) {
@@ -141,7 +180,14 @@ public class AppShareAction extends FastAction {
             if (lastVersion != null) {
                 lastVersion.set("countDownload", lastVersion.getInt("countDownload") + 1);
                 if (lastVersion.update()) {
-                    if (lastVersion.isNotEmpty("appStoreUrl")) {
+
+                    FinalAppIosHistoryEntity history = FinalAppIosHistoryEntity.newInstance();
+                    history.set("versionId", lastVersion.getId());
+                    history.set("clientIp", getRemoteIp());
+                    history.set("clientInfo", getUserAgent());
+                    history.save();
+
+                    if (lastVersion.isNotEmpty("appStoreUrl") && !lastVersion.isBeta()) {
                         redirect(lastVersion.getString("appStoreUrl"));
                     }
                     String url = "itms-services://?action=download-manifest&url=" + lastVersion.get("plistFile");
@@ -149,8 +195,7 @@ public class AppShareAction extends FastAction {
                 }
             }
         }
-        responseText("无效应用！");
+        response502("无效应用！");
     }
-
 
 }

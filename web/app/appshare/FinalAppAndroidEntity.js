@@ -153,10 +153,10 @@ function FinalAppAndroidEntity() {
                     align: "center",
                     width: 220,
                     operation: true,
-                    renderer: renders.normal(),
-                    field: {
-                        minValue: 0,
-                        xtype: "numberfield"
+                    renderer: function (val,m, record) {
+                        let versionId = record.get("versionId");
+                        let functionStr = "new FinalAppAndroidHistoryEntity().showWinList(null,'下载记录', {'t.versionId':" + versionId + "})";
+                        return "&nbsp;<a href=\"javascript:" + functionStr + ";\" >" + val + "</a>&nbsp;";
                     }
                 },
                 {
